@@ -1,0 +1,90 @@
+Demo1
+package ecommerce;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class Demo1 {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		// TODO Auto-generated method stub
+		  String dbUrl="jdbc:mysql://localhost:3306/ecommerce1";//Connecting String
+          String username="root";
+          String password="pass123";
+          String query="select * from products;";
+          
+          Class.forName("com.mysql.cj.jdbc.Driver");
+          Connection con =DriverManager.getConnection(dbUrl,username,password);//Connecting to DB
+          Statement stmt = con.createStatement(); //Execute the query
+          ResultSet rs=stmt.executeQuery(query);
+          
+          while(rs.next()){
+        	  System.out.print("id: "+rs.getInt("id")+ "\t");
+        	  System.out.print("product_name: "+rs.getString("product_name")+ "\t");
+        	  System.out.print("product_price: "+rs.getString("product_price")+ "\t");
+        	  System.out.println("Release Year: "+rs.getInt("manufacturing_year")+ "\t");
+        	  System.out.println("product_type: "+rs.getString("product_type"));
+        	  
+          }
+          
+	}
+}
+
+package ecommerce;
+
+
+	import java.sql.Connection;
+	import java.sql.DriverManager;
+	import java.sql.ResultSet;
+	import java.sql.SQLException;
+	import java.sql.Statement;
+
+	public class Demo2 {
+		 public static void main(String[] args) {
+		        // JDBC database credentials
+		        String dbUrl = "jdbc:mysql://localhost:3306/ecommerce1"; // Replace 'your_database_connection_url' with the actual URL
+		        String username = "root"; // Replace 'your_username' with the actual username
+		        String password = "pass123"; // Replace 'your_password' with the actual password
+
+		        Connection connection = null;
+		        Statement statement = null;
+		        ResultSet resultSet = null;
+
+		        try {
+		            // Step 1: Load and register the JDBC driver
+		            Class.forName("com.mysql.cj.jdbc.Driver"); // Replace 'your_jdbc_driver_class' with the actual driver class name
+
+		            // Step 2: Establish the database connection
+		            connection = DriverManager.getConnection(dbUrl, username, password);
+
+		            // Step 3: Create a statement
+		            statement = connection.createStatement();
+
+		            // Step 4: Fetch the information and count similar product types
+		            String sqlQuery = "SELECT product_type, COUNT(*) AS similar_product_count " +
+		                              "FROM products " +
+		                              "GROUP BY product_type";
+		            resultSet = statement.executeQuery(sqlQuery);
+		            // Step 5: Process the results
+		            while (resultSet.next()) {
+		                String productType = resultSet.getString("product_type");
+		                int count = resultSet.getInt("similar_product_count");
+		                System.out.println("Product Type: " + productType + ", Count: " + count);
+		            }
+		        } catch (ClassNotFoundException | SQLException e) {
+		            e.printStackTrace();
+		        } finally {
+		            // Step 6: Close the resources
+		            try {
+		                if (resultSet != null) resultSet.close();
+		                if (statement != null) statement.close();
+		                if (connection != null) connection.close();
+		            } catch (SQLException e) {
+		                e.printStackTrace();
+		            }
+		        }
+		 }
+	}
+
