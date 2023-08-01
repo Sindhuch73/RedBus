@@ -1,0 +1,387 @@
+Source Code
+Features:
+Feature: Swiggy Order Process
+Scenario: A User must be able to order items to the cart on Swiggy
+Given a user is on the landing page of swiggy
+When he type "Hyderabad" as my delivery location and select the first option
+And he clicks on the first restaurant shown under "Top restaurant chains in Hyderabad"
+And he clicks on the "Add" button corresponding to the first listed dish
+And he hover over the "Cart" in the top right corner
+And he clicks on "Check Out" in the sub-menu
+Then he verifies that the text "To place your order now, log in to your existing account or sign up." is visible on the next page
+And he close the browser
+
+Glue Code:
+package in.swiggy.TestSteps;
+import static org.testng.Assert.assertTrue
+import org.testng.Assert;
+import in.swiggy.pages.SwiggyPage;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+public class OrderFoodItem extends Driver {
+	@Given("a user is on the landing page of swiggy")
+	public void a_user_is_on_the_landing_page_of_swiggy() {
+		assertTrue(driver.getTitle().equals("Order food online from India's best food delivery service. Order from restaurants near you"));
+	}
+
+	@When("he type {string} as my delivery location and select the first option")
+	public void he_type_as_my_delivery_location_and_select_the_first_option(String string) throws InterruptedException {
+		SwiggyPage.searchProduct("Hyderabad");	 
+	}
+
+	@When("he clicks on the first restaurant shown under {string}")
+	public void he_clicks_on_the_first_restaurant_shown_under(String string) throws InterruptedException {
+		SwiggyPage.item();
+	}
+
+	@When("he clicks on the {string} button corresponding to the first listed dish")
+	public void he_clicks_on_the_button_corresponding_to_the_first_listed_dish(String string) throws InterruptedException {
+
+		SwiggyPage.addItem();
+	}
+	@When("he hover over the {string} in the top right corner")
+	public void he_hover_over_the_in_the_top_right_corner(String string) throws InterruptedException {
+		SwiggyPage.hoverOverToCart();
+	}
+	@When("he clicks on {string} in the sub-menu")
+	public void he_clicks_on_in_the_sub_menu(String string) throws InterruptedException {
+		SwiggyPage.checkItem();
+	}
+	@Then("he verifies that the text {string} is visible on the next page")
+	public void he_verifies_that_the_text_is_visible_on_the_next_page(String string) throws InterruptedException {
+
+		Thread.sleep(3000);
+		String expectedText="To place your order now, log in to your existing account  or sign up.";
+		String actualText=SwiggyPage.getText();
+		Assert.assertEquals(actualText,expectedText);
+	}
+@Then("he close the browser")
+	public void he_close_the_browser() {
+  driver.quit();
+}
+	}
+Tools:
+package in.swiggy.TestSteps;
+import org.openqa.selenium.WebDriver;
+public class Tools {
+	protected static WebDriver driver;
+}
+Driver:
+package in.swiggy.TestSteps;
+import org.openqa.selenium.chrome.ChromeDriver;
+import in.swiggy.pages.SwiggyPage;
+public class Driver extends Tools {
+	protected static SwiggyPage swiggypage;
+	public static void init() {
+		driver = new ChromeDriver();
+		driver.manage().window().maximize();
+		driver.get("https://www.swiggy.com/");
+swiggypage = new SwiggyPage(driver);
+}
+}
+
+TestRunner:
+package in.swiggy.TestSteps;
+
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+import io.cucumber.testng.CucumberOptions;
+
+@CucumberOptions(
+		features = "Features",
+		glue = "in.swiggy.TestSteps"
+		//dryRun true
+		//tags = "@product_purchase or login_functionality"
+		)
+
+public class TestRunner extends AbstractTestNGCucumberTests {
+
+}
+BeforeAfter:
+package in.swiggy.TestSteps;
+
+import io.cucumber.java.After;
+import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
+
+public class BeforeAfter extends Tools {
+	
+	@Before
+	public void setUp(Scenario scenario) {
+		Driver.init();
+	}
+	
+	@After
+	public void tearDown() {
+		driver.quit();
+	}
+
+}
+
+package in.swiggy.pages;
+import java.time.Duration;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class SwiggyPage {
+		private static Actions actions;
+		private static WebDriverWait wait;
+		@FindBy(id="location")
+		static
+		WebElement searchBox;
+		@FindBy(xpath="//div[contains(@class,'_1oLDb')]")
+		static
+		WebElement fullBox;
+		@FindBy(xpath="//div[contains(@class,'sc-JrDLc kuXHzn')][1]")
+		static
+		WebElement firstItem;
+		@FindBy(xpath="//div[contains(@class,'_1RPOp')][1]")
+		static
+		WebElement add;
+		@FindBy(xpath="//span[contains(@class,'_3yZyp _18ZFk')]")
+		static
+		WebElement cart;
+		@FindBy(xpath="//div[contains(@class,'_55uP6')]")
+		static
+		WebElement checkOut;
+		@FindBy(xpath="//div[contains(@class,'_2axtv')][1]")
+		static
+		WebElement verify;
+		public SwiggyPage(WebDriver driver) {
+			 PageFactory.initElements(driver,this);
+			 actions=new Actions(driver);
+			 wait=new WebDriverWait(driver,Duration.ofSeconds(60));
+			 
+		}
+		public static void searchProduct(String item) {
+			searchBox.sendKeys(item);
+			wait.until(ExpectedConditions.visibilityOfAllElements(fullBox));
+			actions.sendKeys(Keys.ARROW_DOWN).sendKeys(Keys.ENTER).build().perform();
+			}
+		public static void item() throws InterruptedException {
+			Thread.sleep(5000);
+			firstItem.click();
+		}
+		public static void addItem() throws InterruptedException {
+			Thread.sleep(5000);
+			add.click();
+		}
+		public static void hoverOverToCart() throws InterruptedException {
+			Thread.sleep(4000);
+			actions.moveToElement(cart).build().perform();
+			
+		}
+		public static void checkItem() throws InterruptedException {
+			Thread.sleep(4000);
+			
+			checkOut.click();
+			
+		}
+		public static String getText() {
+			String text=verify.getText();
+			return text;
+		}
+	}
+
+package com.Listeners;
+
+import java.io.File;
+
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.configuration.ChartLocation;
+import com.aventstack.extentreports.reporter.configuration.Theme;
+
+
+public class ExtentManager {
+	 private static ExtentReports extent;
+	    private static String reportFileName = "Test-Automation-Report"+".html";
+	    private static String fileSeperator = System.getProperty("file.separator");
+	    private static String reportFilepath = System.getProperty("user.dir") +fileSeperator+ "TestReport";
+	    private static String reportFileLocation =  reportFilepath +fileSeperator+ reportFileName;
+	  
+	 
+	    public static ExtentReports getInstance() {
+	        if (extent == null)
+	            createInstance();
+	        return extent;
+	    }
+	 
+	    //Create an extent report instance
+	    public static ExtentReports createInstance() {
+	        String fileName = getReportPath(reportFilepath);
+	       
+	        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter(fileName);
+	        htmlReporter.config().setTestViewChartLocation(ChartLocation.TOP);
+	        htmlReporter.config().setChartVisibilityOnOpen(true);
+	        htmlReporter.config().setTheme(Theme.STANDARD);
+	        htmlReporter.config().setDocumentTitle(reportFileName);
+	        htmlReporter.config().setEncoding("utf-8");
+	        htmlReporter.config().setReportName(reportFileName);
+	        htmlReporter.config().setTimeStampFormat("EEEE, MMMM dd, yyyy, hh:mm a '('zzz')'");
+	 
+	        extent = new ExtentReports();
+	        extent.attachReporter(htmlReporter);
+	        //Set environment details
+			extent.setSystemInfo("OS", "Windows");
+			extent.setSystemInfo("AUT", "QA");
+	 
+	        return extent;
+	    }
+	     
+	    //Create the report path
+	    private static String getReportPath (String path) {
+	    	File testDirectory = new File(path);
+	        if (!testDirectory.exists()) {
+	        	if (testDirectory.mkdir()) {
+	                System.out.println("Directory: " + path + " is created!" );
+	                return reportFileLocation;
+	            } else {
+	                System.out.println("Failed to create directory: " + path);
+	                return System.getProperty("user.dir");
+	            }
+	        } else {
+	            System.out.println("Directory already exists: " + path);
+	        }
+			return reportFileLocation;
+	    }
+
+}
+
+package com.Listeners;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+
+public class ExtentTestManager {
+	static Map<Integer, ExtentTest> extentTestMap = new HashMap<Integer, ExtentTest>();
+	static ExtentReports extent = ExtentManager.getInstance();
+
+	public static synchronized ExtentTest getTest() {
+		return (ExtentTest) extentTestMap.get((int) (long) (Thread.currentThread().getId()));
+	}
+
+	public static synchronized void endTest() {
+		extent.flush();
+	}
+
+	public static synchronized ExtentTest startTest(String testName) {
+		ExtentTest test = extent.createTest(testName);
+		extentTestMap.put((int) (long) (Thread.currentThread().getId()), test);
+		return test;
+	}
+
+}
+
+package com.Listeners;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
+import org.apache.log4j.Logger;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.io.FileHandler;
+import org.testng.ITestContext;
+import org.testng.ITestResult;
+
+import com.aventstack.extentreports.MediaEntityBuilder;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.model.Log;
+
+public class TestListener {
+private static Logger log = Logger.getLogger(Log.class.getName());
+	
+	public void onStart(ITestContext context) {
+		System.out.println("*** Test Suite " + context.getName() + " started ***");
+	}
+
+	public void onFinish(ITestContext context) {
+		System.out.println(("*** Test Suite " + context.getName() + " ending ***"));
+		ExtentTestManager.endTest();
+		ExtentManager.getInstance().flush();
+	}
+
+	public void onTestStart(ITestResult result) {
+		System.out.println(("*** Running test method " + result.getMethod().getMethodName() + "..."));
+		ExtentTestManager.startTest(result.getMethod().getMethodName());
+	}
+
+	public void onTestSuccess(ITestResult result) {
+		System.out.println("*** Executed " + result.getMethod().getMethodName() + " test successfully...");
+		ExtentTestManager.getTest().log(Status.PASS, "Test passed");
+	}
+
+	public void onTestFailure(ITestResult result) {
+		log.info("*** Test execution " + result.getMethod().getMethodName() + " failed...");
+		log.info((result.getMethod().getMethodName() + " failed!"));
+
+		//ITestContext context = result.getTestContext();
+		WebDriver driver = (WebDriver) result.getTestContext().getAttribute("driver");
+
+		String targetLocation = null;
+
+		String testClassName = result.getInstanceName().trim();
+		String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date()); // get timestamp
+		String testMethodName = result.getName().toString().trim();
+		String screenShotName = testMethodName + timeStamp + ".png";
+		String fileSeperator = System.getProperty("file.separator");
+		String reportsPath = System.getProperty("user.dir") + fileSeperator + "TestReport" + fileSeperator
+				+ "screenshots";
+		log.info("Screen shots reports path - " + reportsPath);
+		try {
+			File file = new File(reportsPath + fileSeperator + testClassName); // Set
+																				// screenshots
+																				// folder
+			if (!file.exists()) {
+				if (file.mkdirs()) {
+					log.info("Directory: " + file.getAbsolutePath() + " is created!");
+				} else {
+					log.info("Failed to create directory: " + file.getAbsolutePath());
+				}
+
+			}
+
+			File screenshotFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+			targetLocation = reportsPath + fileSeperator + testClassName + fileSeperator + screenShotName;// define
+												// location
+			File targetFile = new File(targetLocation);
+			log.info("Screen shot file location - " + screenshotFile.getAbsolutePath());
+			log.info("Target File location - " + targetFile.getAbsolutePath());
+			FileHandler.copy(screenshotFile, targetFile);
+
+		} catch (FileNotFoundException e) {
+			log.info("File not found exception occurred while taking screenshot " + e.getMessage());
+		} catch (Exception e) {
+			log.info("An exception occurred while taking screenshot " + e.getCause());
+		}
+
+		// attach screenshots to report
+		try {
+			ExtentTestManager.getTest().fail("Screenshot",
+					MediaEntityBuilder.createScreenCaptureFromPath(targetLocation).build());
+		} catch (IOException e) {
+			log.info("An exception occured while taking screenshot " + e.getCause());
+		}
+		ExtentTestManager.getTest().log(Status.FAIL, "Test Failed");
+	}
+public void onTestSkipped(ITestResult result) {
+		System.out.println("*** Test " + result.getMethod().getMethodName() + " skipped...");
+	ExtentTestManager.getTest().log(Status.SKIP, "Test Skipped");
+	}
+	public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
+		System.out.println("*** Test failed but within percentage % " + result.getMethod().getMethodName());
+	}
+}
